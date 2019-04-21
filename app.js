@@ -6,70 +6,38 @@ const $ = require('cheerio')
 const queryString = require('querystring')
 
 
-const url = 'http://www.msialogistics.com/category/lr/lorry-transport'
-const alphas = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-
-app.get('/:alpha', (req, res)=>{
-    const param = {
-        classid: 'LL200',
-        alpha: req.params.alpha
-    }
-    const query = queryString.stringify(param)
-    let queryUrl = url+'?'+query
-        
-    scrapEmailFromPage(queryUrl)
-        .then(result=>{
-        res.send(result)
-    })
-    .catch(err=>{
-        console.log(err)
-    })
-})
+const url = 'http://femalemag.com.my/relationships-sex/7-reasons-why-couples-hold-hands/'
 
 app.get('/', (req, res)=>{
+
+    // webpage is a single page webpage with 8 different url endpoints embedded
+    let pages = 8
+
+    // runs scarpHTMLFromPage which returns a promise per url
     let promises = []
-    for(let i=0; i<alphas.length; i++){
-        const param = {
-            classid: 'LL200',
-            alpha: alphas[i]
-        }
-        const query = queryString.stringify(param)
-        let queryUrl = url+'?'+query
-        promises.push(scrapEmailFromPage(queryUrl))
+    for(let i=1; i<pages+1; i++){
+        promises.push(scrapHTMLFromPage(url+i))        
     }
 
+    // once all promises are done results are written into reuslt.json
     Promise.all(promises)
-    .then(result=>{
-        res.send(result)
-        writeToFile(result, 'result.json')
+    .then(data=>{
+        writeToFile(data, 'result.json')
     })
-    .catch(err=>{
-        console.log(err)
-    })
+
 })
 
-let port = process.env.PORT || 8888
-app.listen(port, ()=>{
-    console.log('Connection established')
-    console.log('Go to localhost:8888')
-})  
-
-function scrapEmailFromPage(url){
+function scrapHTMLFromPage(url){
     return rp(url)
     .then(html=>{
-        const table = $('#content_box > #article_box3 > div > div > table > tbody > tr > td > table > tbody > tr > td > table > tbody > tr td > div > a', html)
-        
-        const emailRegex = RegExp('email[0-9]')
-        let word = []
-    
-        for(let i=0; i<table.length; i++){
-            const id = table[i].attribs.id
-            if(emailRegex.test(id)){
-                if(table[i].attribs.title)
-                    word.push(table[i].attribs.title)
-            }
-        }        
-        return word
+        // html is the entire html body of the url webpage
+        const content = $('.theiaPostSlider_slides', html)
+
+        // p is a children under content
+        const p = content.find('p')
+
+        // returns the text attribute of p
+        return p.text()
     })
 }
 
@@ -85,3 +53,10 @@ function writeToFile(data, fileName){
         }
     })
 }
+
+
+let port = process.env.PORT || 8888
+app.listen(port, ()=>{
+    console.log('Connection established')
+    console.log('Go to localhost:8888')
+})  
