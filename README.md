@@ -18,9 +18,15 @@ Modifications required to be done to code to apply to other websites
 ```
 $ cd WebScrapper
 ```
+change directory
+```
+$ npm install
+```
+install packages
 ```
 $ node app.js
 ```
+run app
 
 ## Results
 Result would at root folder, with filename as passed into run()
