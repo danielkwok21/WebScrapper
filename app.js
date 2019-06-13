@@ -6,26 +6,35 @@ const $ = require('cheerio')
 const queryString = require('querystring')
 
 
-const url = 'http://femalemag.com.my/relationships-sex/7-reasons-why-couples-hold-hands/'
-
-app.get('/', (req, res)=>{
-
-    // webpage is a single page webpage with 8 different url endpoints embedded
-    let pages = 8
-
+/*
+webpage is a single page webpage with 8 different url endpoints embedded
+fileName is the file to write to   
+*/
+function run(url, pages, fileName){
+    
     // runs scarpHTMLFromPage which returns a promise per url
     let promises = []
     for(let i=1; i<pages+1; i++){
         promises.push(scrapHTMLFromPage(url+i))        
     }
 
+
+    /*
+    regex filter tips
+    <img(.*)/> to remove all images
+    */
+
     // once all promises are done results are written into reuslt.json
     Promise.all(promises)
     .then(data=>{
-        writeToFile(data, 'result.json')
+        writeToFile(data, fileName+'.txt')
+    })
+    .catch(err=>{
+        console.log('ERROR')
+        console.log(err)
     })
 
-})
+}
 
 function scrapHTMLFromPage(url){
     return rp(url)
@@ -37,6 +46,7 @@ function scrapHTMLFromPage(url){
         const p = content.find('p')
 
         // returns the text attribute of p
+        
         return p.text()
     })
 }
@@ -55,8 +65,7 @@ function writeToFile(data, fileName){
 }
 
 
-let port = process.env.PORT || 8888
-app.listen(port, ()=>{
-    console.log('Connection established')
-    console.log('Go to localhost:8888')
-})  
+
+const url = 'http://femalemag.com.my/relationships-sex/5-unforgettable-quirky-places-in-malaysia-to-propose/'
+
+run(url, 6, 'result')
